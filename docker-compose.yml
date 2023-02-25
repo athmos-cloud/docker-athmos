@@ -28,9 +28,9 @@ services:
 #    networks:
 #      - default
 
-  infra-worker:
+  plugin-worker:
     build:
-      context: infra-worker
+      context: plugin-worker
       dockerfile: Dockerfile.debug
     container_name: infra-worker
     environment:
