@@ -67,51 +67,7 @@ services:
     volumes:
       - ./data/mongo:/data/db
 
-  minio:
-    image: quay.io/minio/minio
-    container_name: minio
-    command: server --console-address ":9001" /data
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    networks:
-      - default
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    volumes:
-      - ./data/minio:/data
 
-  bucket-init:
-    image: minio/mc
-    container_name: bucket-init
-    depends_on:
-      - minio
-    networks:
-      - default
-    volumes:
-      - ./tf-infra:/tmp/terraform
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000/ minioadmin minioadmin;
-      /usr/bin/mc mb myminio/keycloak;
-      /usr/bin/mc rm -r --force myminio/terraform;
-      /usr/bin/mc mb myminio/terraform;
-      /usr/bin/mc policy download myminio/terraform;
-      /usr/bin/mc cp --recursive /tmp/terraform/* myminio/terraform;
-      /usr/bin/mc version enable myminio/terraform;
-      exit 0;
-      "
-    
-#  kafka-cli:
-#    image: edenhill/kafkacat:1.5.0
-#    container_name: kafkacat
-#    entrypoint:
-#      - /bin/sh
-#      - -c
-#      - |
-#        apk add jq;
-#        while [ 1 -eq 1 ];do sleep 60;done
 
 networks:
  default:
