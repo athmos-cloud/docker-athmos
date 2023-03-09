@@ -1,2 +1,4 @@
-plugin
-plugin-worker
+plugins
+infra-worker
+.idea
+.vscode

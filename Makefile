@@ -1,9 +1,11 @@
 
-PLUGIN_WORKER_REPO=git@github.com:athmos-cloud/athmos-plugin-worker.git
-PLUGIN_WORKER_DIR=plugin-worker
-PLUGIN_DIR=plugin
-PLUGIN_INFRA_HELM_DIR=$(PLUGIN_DIR)/infra/helm
+INFRA_WORKER_REPO=git@github.com:athmos-cloud/athmos-infra-worker.git
+INFRA_WORKER_DIR=infra-worker
+PLUGIN_DIR=plugins
+PLUGIN_INFRA_HELM_DIR=$(PLUGIN_DIR)/infra/crossplane
 PLUGIN_INFRA_REPO_DIR=git@github.com:athmos-cloud/infra-helm-plugin.git
+
+.DEFAULT_GOAL := help
 
 help: _banner ## Show help for all targets
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
@@ -44,6 +46,6 @@ _clone:
 
 clone: ## Clone the repositories
 	@mkdir -p $(PLUGIN_DIR)
-	$(MAKE) _clone dir=$(PLUGIN_WORKER_DIR) repo=$(PLUGIN_WORKER_REPO)
+	$(MAKE) _clone dir=$(INFRA_WORKER_DIR) repo=$(INFRA_WORKER_REPO)
 	$(MAKE) _clone dir=$(PLUGIN_INFRA_HELM_DIR) repo=$(PLUGIN_INFRA_REPO_DIR)
 .PHONY: clone
