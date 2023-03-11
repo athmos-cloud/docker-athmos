@@ -1,5 +1,5 @@
 
-INFRA_WORKER_REPO=git@github.com:athmos-cloud/athmos-infra-worker.git
+INFRA_WORKER_REPO=git@github.com:athmos-cloud/infra-worker-athmos.git
 INFRA_WORKER_DIR=infra-worker
 PLUGIN_DIR=plugins
 PLUGIN_INFRA_HELM_DIR=$(PLUGIN_DIR)/infra/crossplane
