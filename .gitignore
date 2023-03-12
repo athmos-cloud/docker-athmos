@@ -1,5 +1,7 @@
 plugins
 infra-worker
+docker-images
 .idea
 .vscode
 data
+test

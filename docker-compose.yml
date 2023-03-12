@@ -44,26 +44,32 @@ services:
     image: bitnami/chartmuseum:0.15.0-debian-11-r79
     container_name: chart-museum
     entrypoint: chartmuseum
+    user: "0"
     command:
         - --port=8080
         - --storage=local
         - --storage-local-rootdir=/charts
-        - --basic-auth-user=athmmos
-        - --basic-auth-pass=athmmos
+        - --basic-auth-user=athmos
+        - --basic-auth-pass=athmos
     ports:
       - "8080:8080"
-    volumes:
-      - ./plugins:/charts
+  init-chart-museum:
+    build:
+      context: ./docker-images/helm
+      dockerfile: Dockerfile
+    container_name: init-chart-museum
+    user: "0"
+    entrypoint: "/charts/package.sh true"
+    working_dir: /charts
+    environment:
+      REPOSITORY_USERNAME: "athmos"
+      REPOSITORY_PASSWORD: "athmos"
+      REPOSITORY_ADDRESS: "chart-museum:8080"
 
+    depends_on:
+      - chart-museum
+    volumes:
+      - ./plugins/infra/crossplane:/charts
 networks:
  default:
   driver: bridge
-  ipam:
-    driver: default
-    config:
-      - subnet: 10.5.0.0/16
-        ip_range: 10.5.0.0/24
-        gateway: 10.5.0.1
-        aux_addresses:
-          kafka: 10.5.0.2
-          zookeeper: 10.5.0.3
