@@ -55,7 +55,7 @@ services:
       - "8080:8080"
   init-chart-museum:
     build:
-      context: ./docker-images/helm
+      context: docker-images/helm
       dockerfile: Dockerfile
     container_name: init-chart-museum
     user: "0"

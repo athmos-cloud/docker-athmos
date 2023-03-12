@@ -1,6 +1,6 @@
 plugins
 infra-worker
-docker-images
+docker-image
 .idea
 .vscode
 data
