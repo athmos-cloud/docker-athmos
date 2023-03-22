@@ -7,6 +7,9 @@ services:
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
+      - ./configs/kube:/root/.kube
+    environment:
+      - "KUBERNETES_KUBECONFIG_PATH=/root/.kube/config"
     ports:
       - "4000:4000" # For debugger
     depends_on:
@@ -15,6 +18,8 @@ services:
     - chart-museum
     networks:
       - default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:15.1-alpine3.17

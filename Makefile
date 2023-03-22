@@ -6,6 +6,9 @@ PLUGIN_INFRA_HELM_DIR=$(PLUGIN_DIR)/infra/crossplane
 PLUGIN_INFRA_REPO_DIR=git@github.com:athmos-cloud/infra-helm-plugin.git
 DOCKER_IMAGES_REPO=git@github.com:athmos-cloud/docker-images.git
 DOCKER_IMAGES_DIR=docker-images
+KUBE_LOCATION=configs/kube
+KUBE_CONFIG_LOCATION=$(KUBE_LOCATION)/config
+CROSSPLANE_CONFIG_DIR=configs/crossplane
 .DEFAULT_GOAL := help
 
 help: _banner ## Show help for all targets
@@ -36,6 +39,33 @@ logs: ## Show ohmc containers logs [svc=<container> for 1 container]
 nuke-containers: ## Remove all containers
 	@docker rm -f $(docker ps -aq)
 .PHONY: nuke-containers
+
+_k3d: _clear-k3d ## Create a k3d cluster
+	@mkdir -p $(KUBE_LOCATION)
+	@k3d cluster create $(CLUSTER_TEST_NAME) --servers 2
+	@k3d kubeconfig write $(CLUSTER_TEST_NAME)-o $(KUBE_CONFIG_LOCATION) --overwrite
+	@export KUBECONFIG=$(KUBE_CONFIG_LOCATION)
+.PHONY: _k3d
+
+_clear-k3d:
+	@k3d cluster delete $(CLUSTER_TEST_NAME)
+.PHONY: _clear-k3d
+
+_crossplane-operator:
+	@kubectl create namespace crossplane-system
+   	@helm repo add crossplane-stable https://charts.crossplane.io/stable &&\
+   	helm repo update &&\
+   	helm install crossplane --namespace crossplane-system crossplane-stable/crossplane
+.PHONY: _crossplane-operator
+
+_crossplane-configs:
+	@kubectl apply -f $(CROSSPLANE_CONFIG_DIR)/config
+.PHONY: _crossplane-configs
+
+_crossplane: _crossplane-operator _crossplane-configs ## Install crossplane
+.PHONY: _crossplane
+
+cluster: _k3d _crossplane ## Create a k3d cluster with crossplane installations
 
 _banner:
 	@cat .assets/banner
