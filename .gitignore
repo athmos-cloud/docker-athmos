@@ -5,3 +5,4 @@ docker-image
 .vscode
 data
 test
+configs/kube
