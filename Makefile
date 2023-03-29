@@ -75,6 +75,9 @@ _crossplane: ## Install crossplane
 
 cluster: _k3d _crossplane ## Create a k3d cluster with crossplane installations
 
+plugins-package:
+	@cd $(PLUGIN_INFRA_HELM_DIR) && ./plugin.sh
+
 _banner:
 	@cat .assets/banner
 .PHONY: _banner

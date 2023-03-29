@@ -3,13 +3,15 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile_prod
+      dockerfile: Dockerfile
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
       - ./configs/kube:/root/.kube
+      - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
     environment:
       - "KUBERNETES_KUBECONFIG_PATH=/root/.kube/config"
+      - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
       - "4000:4000" # For debugger
     depends_on:
@@ -19,6 +21,7 @@ services:
       - default
 #    extra_hosts:
 #      - "host.docker.internal:host-gateway"
+
 
 #  postgres:
 #    image: postgres:15.1-alpine3.17
@@ -71,7 +74,6 @@ services:
       REPOSITORY_USERNAME: "athmos"
       REPOSITORY_PASSWORD: "athmos"
       REPOSITORY_ADDRESS: "chart-museum:8080"
-
     depends_on:
       - chart-museum
     volumes:
