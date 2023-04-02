@@ -1,6 +1,8 @@
 
 APP_REPO=git@github.com:athmos-cloud/app-athmos.git
 APP_DIR=app
+API_REPO=git@github.com:athmos-cloud/api-athmos.git
+API_DIR=api
 INFRA_WORKER_REPO=git@github.com:athmos-cloud/infra-worker-athmos.git
 INFRA_WORKER_DIR=infra-worker
 PLUGIN_DIR=plugins
@@ -95,6 +97,7 @@ clone: ## Clone the repositories
 	@mkdir -p $(PLUGIN_DIR)
 	$(MAKE) _clone dir=$(APP_DIR) repo=$(APP_REPO)
 	@git checkout develop
+	$(MAKE) _clone dir=$(API_DIR) repo=$(API_REPO)
 	$(MAKE) _clone dir=$(INFRA_WORKER_DIR) repo=$(INFRA_WORKER_REPO)
 	$(MAKE) _clone dir=$(PLUGIN_INFRA_HELM_DIR) repo=$(PLUGIN_INFRA_REPO_DIR)
 	$(MAKE) _clone dir=$(DOCKER_IMAGES_DIR) repo=$(DOCKER_IMAGES_REPO)

@@ -1,5 +1,25 @@
 version: '2.3'
 services:
+  traefik:
+    image: "traefik:v2.7"
+    container_name: "traefik"
+    networks:
+      - backend
+      - frontend
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "traefik.http.middlewares.testHeader.headers.customrequestheaders.Access-Control-Allow-Origin: http://athmos.localhost"
+      - "traefik.http.middlewares.testHeader.headers.customrequestheaders.Access-Control-Allow-Credentials: true"
+    ports:
+      - "80:80"
+      - "8082:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   app:
     build:
         context: app
@@ -9,6 +29,13 @@ services:
       - "3000:3000"
     volumes:
       - ./app:/app
+      - /app/node_modules
+    networks:
+      - frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitter-app.rule=Host(`athmos.localhost`)"
+      - "traefik.http.routers.gitter-app.entrypoints=web"
 
   infra-worker:
     build:
@@ -28,22 +55,23 @@ services:
     - mongodb
     - chart-museum
     networks:
-      - default
+      - backend
 #    extra_hosts:
 #      - "host.docker.internal:host-gateway"
 
-
-#  postgres:
-#    image: postgres:15.1-alpine3.17
-#    container_name: postgres
-#    environment:
-#      POSTGRES_USER: user
-#      POSTGRES_PASSWORD: password
-#      POSTGRES_DB: dbname
-#    volumes:
-#     - ./data/mount:/var/lib/postgresql/data
-#    ports:
-#      - "5432:5432"
+  postgres:
+    image: postgres:15.1-alpine3.17
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    networks:
+      - backend
+    volumes:
+      - ./data/mount:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   mongodb:
     image: mongo:6.0.5
@@ -52,6 +80,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
       MONGO_INITDB_DATABASE: plugin-db
+    networks:
+      - backend
     ports:
       - "27017:27017"
     volumes:
@@ -72,6 +102,8 @@ services:
         - --basic-auth-pass=athmos
     ports:
       - "8080:8080"
+    networks:
+      - backend   
   init-chart-museum:
     build:
       context: docker-images/helm
@@ -88,6 +120,9 @@ services:
       - chart-museum
     volumes:
       - ./plugins/infra/crossplane:/charts
+    networks:
+      - backend
+      
 networks:
- default:
-  driver: bridge
+ frontend:
+ backend:
