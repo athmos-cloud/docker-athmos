@@ -1,4 +1,6 @@
 
+APP_REPO=git@github.com:athmos-cloud/app-athmos.git
+APP_DIR=app
 INFRA_WORKER_REPO=git@github.com:athmos-cloud/infra-worker-athmos.git
 INFRA_WORKER_DIR=infra-worker
 PLUGIN_DIR=plugins
@@ -6,6 +8,7 @@ PLUGIN_INFRA_HELM_DIR=$(PLUGIN_DIR)/infra/crossplane
 PLUGIN_INFRA_REPO_DIR=git@github.com:athmos-cloud/infra-helm-plugin.git
 DOCKER_IMAGES_REPO=git@github.com:athmos-cloud/docker-images.git
 DOCKER_IMAGES_DIR=docker-images
+
 KUBE_CONFIG_DIR=configs/kube
 KUBE_CONFIG_LOCATION=$(KUBE_CONFIG_DIR)/config
 LOCAL_KUBE_CONFIG_DIR=~/.kube
@@ -16,6 +19,8 @@ CROSSPLANE_CONFIG_DIR=configs/crossplane
 help: _banner ## Show help for all targets
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
+
+all: clone cluster up ## Clone the repositories and run ohmc containers
 
 rm: ## Remove ohmc containers
 ifndef $(svc)
@@ -88,6 +93,8 @@ _clone:
 
 clone: ## Clone the repositories
 	@mkdir -p $(PLUGIN_DIR)
+	$(MAKE) _clone dir=$(APP_DIR) repo=$(APP_REPO)
+	@git checkout develop
 	$(MAKE) _clone dir=$(INFRA_WORKER_DIR) repo=$(INFRA_WORKER_REPO)
 	$(MAKE) _clone dir=$(PLUGIN_INFRA_HELM_DIR) repo=$(PLUGIN_INFRA_REPO_DIR)
 	$(MAKE) _clone dir=$(DOCKER_IMAGES_DIR) repo=$(DOCKER_IMAGES_REPO)

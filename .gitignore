@@ -6,3 +6,4 @@ docker-image
 data
 test
 configs/kube
+app
