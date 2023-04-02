@@ -37,6 +37,24 @@ services:
       - "traefik.http.routers.gitter-app.rule=Host(`athmos.localhost`)"
       - "traefik.http.routers.gitter-app.entrypoints=web"
 
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api:/usr/app
+      - /usr/app/node_modules
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitter-app.rule=Host(`athmos.api.localhost`)"
+      - "traefik.http.routers.gitter-app.entrypoints=web"
+
   infra-worker:
     build:
       context: infra-worker
@@ -58,6 +76,8 @@ services:
       - backend
 #    extra_hosts:
 #      - "host.docker.internal:host-gateway"
+
+
 
   postgres:
     image: postgres:15.1-alpine3.17

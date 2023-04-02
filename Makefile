@@ -96,7 +96,6 @@ _clone:
 clone: ## Clone the repositories
 	@mkdir -p $(PLUGIN_DIR)
 	$(MAKE) _clone dir=$(APP_DIR) repo=$(APP_REPO)
-	@git checkout develop
 	$(MAKE) _clone dir=$(API_DIR) repo=$(API_REPO)
 	$(MAKE) _clone dir=$(INFRA_WORKER_DIR) repo=$(INFRA_WORKER_REPO)
 	$(MAKE) _clone dir=$(PLUGIN_INFRA_HELM_DIR) repo=$(PLUGIN_INFRA_REPO_DIR)
