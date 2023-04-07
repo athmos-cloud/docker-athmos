@@ -22,26 +22,26 @@ help: _banner ## Show help for all targets
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-all: clone cluster up ## Clone the repositories and run ohmc containers
+all: clone cluster plugins-package up ## Clone the repositories and run athmos containers
 
-rm: ## Remove ohmc containers
+rm: ## Remove athmos containers
 ifndef $(svc)
 	@docker-compose rm
 else
 	@docker rm -f $(svc)
-	@docker rmi -f docker-ohmc_$(svc)
+	@docker rmi -f docker-athmos_$(svc)
 endif
 .PHONY: rm
 
-up:  ## Run ohmc containers
+up:  ## Run athmos containers
 	@docker compose up -V -d --build
 .PHONY: up
 
-ps: _banner ## List ohmc containers
+ps: _banner ## List athmos containers
 	@docker compose ps
 .PHONY: ps
 
-logs: ## Show ohmc containers logs [svc=<container> for 1 container]
+logs: ## Show athmos containers logs [svc=<container> for 1 container]
 	@docker compose logs -f $(svc)
 .PHONY: logs
 
@@ -56,6 +56,7 @@ _k3d: _clear-k3d ## Create a k3d cluster
 	@export KUBECONFIG=$(LOCAL_KUBE_CONFIG_LOCATION)
 	@cp $(LOCAL_KUBE_CONFIG_LOCATION) $(KUBE_CONFIG_LOCATION)
 	@sed -i "s/0.0.0.0/host.docker.internal/g" $(KUBE_CONFIG_LOCATION)
+	@kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 .PHONY: _k3d
 
 _clear-k3d:
@@ -76,7 +77,7 @@ _crossplane-configs:
 
 _crossplane: ## Install crossplane
 	$(MAKE) _crossplane-operator
-	@sleep 30
+	@sleep 40
 	$(MAKE) _crossplane-configs
 .PHONY: _crossplane
 
@@ -84,6 +85,7 @@ cluster: _k3d _crossplane ## Create a k3d cluster with crossplane installations
 
 plugins-package:
 	@cd $(PLUGIN_INFRA_HELM_DIR) && ./plugin.sh
+.PHONY: plugins-package
 
 _banner:
 	@cat .assets/banner
