@@ -11,10 +11,10 @@ PLUGIN_INFRA_REPO_DIR=git@github.com:athmos-cloud/infra-helm-plugin.git
 DOCKER_IMAGES_REPO=git@github.com:athmos-cloud/docker-images.git
 DOCKER_IMAGES_DIR=docker-images
 
+KIND_CONFIG=configs/kind/kind.yaml
+KIND_CLUSTER_NAME=plugins
 KUBE_CONFIG_DIR=configs/kube
 KUBE_CONFIG_LOCATION=$(KUBE_CONFIG_DIR)/config
-LOCAL_KUBE_CONFIG_DIR=~/.kube
-LOCAL_KUBE_CONFIG_LOCATION=$(LOCAL_KUBE_CONFIG_DIR)/config-athmos
 CROSSPLANE_CONFIG_DIR=configs/crossplane
 .DEFAULT_GOAL := help
 
@@ -49,19 +49,18 @@ nuke-containers: ## Remove all containers
 	@docker rm -f $(docker ps -aq)
 .PHONY: nuke-containers
 
-_k3d: _clear-k3d ## Create a k3d cluster
+_kind: _clear-kind ## Create a k3d cluster
 	@mkdir -p $(KUBE_CONFIG_DIR)
-	@k3d cluster create $(CLUSTER_TEST_NAME) --servers 2
-	@k3d kubeconfig write $(CLUSTER_TEST_NAME)-o $(LOCAL_KUBE_CONFIG_LOCATION) --overwrite
-	@export KUBECONFIG=$(LOCAL_KUBE_CONFIG_LOCATION)
-	@cp $(LOCAL_KUBE_CONFIG_LOCATION) $(KUBE_CONFIG_LOCATION)
+	@kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
+	@kind get kubeconfig --name $(KIND_CLUSTER_NAME) > $(KUBE_CONFIG_LOCATION)
+	@export KUBECONFIG=$(KUBE_CONFIG_LOCATION)
 	@sed -i "s/0.0.0.0/host.docker.internal/g" $(KUBE_CONFIG_LOCATION)
-	@kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-.PHONY: _k3d
+	@#kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+.PHONY: _kind
 
-_clear-k3d:
-	@k3d cluster delete $(CLUSTER_TEST_NAME)
-.PHONY: _clear-k3d
+_clear-kind:
+	@kind delete cluster --name  $(KIND_CLUSTER_NAME)
+.PHONY: _clear-kind
 
 _crossplane-operator:
 	@kubectl delete namespace --ignore-not-found=true crossplane-system
@@ -81,7 +80,7 @@ _crossplane: ## Install crossplane
 	$(MAKE) _crossplane-configs
 .PHONY: _crossplane
 
-cluster: _k3d _crossplane ## Create a k3d cluster with crossplane installations
+cluster: _kind _crossplane ## Create a k3d cluster with crossplane installations
 
 plugins-package:
 	@cd $(PLUGIN_INFRA_HELM_DIR) && ./plugin.sh
