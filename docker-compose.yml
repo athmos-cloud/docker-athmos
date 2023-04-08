@@ -58,12 +58,13 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_liver
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
       - ./configs/kube:/root/.kube
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
+      - ~/.gcp/credentials/cloud-project-esgi.json:/etc/credentials/gcp.json
     environment:
       - "KUBERNETES_KUBECONFIG_PATH=/root/.kube/config"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"

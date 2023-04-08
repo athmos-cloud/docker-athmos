@@ -82,7 +82,7 @@ _crossplane: ## Install crossplane
 
 cluster: _kind _crossplane ## Create a k3d cluster with crossplane installations
 
-plugins-package:
+plugins-package: ## Create the plugin folder
 	@cd $(PLUGIN_INFRA_HELM_DIR) && ./plugin.sh
 .PHONY: plugins-package
 
