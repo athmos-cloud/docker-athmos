@@ -37,23 +37,30 @@ services:
       - "traefik.http.routers.gitter-app.rule=Host(`athmos.localhost`)"
       - "traefik.http.routers.gitter-app.entrypoints=web"
 
-#  api:
-#    build:
-#      context: api
-#      dockerfile: Dockerfile_liver
-#    volumes:
-#      - ./api:/usr/app
-#      - /usr/app/node_modules
-#    networks:
-#      - backend
-#    depends_on:
-#      - postgres
-#    ports:
-#      - "3001:3000"
-#    labels:
-#      - "traefik.enable=true"
-#      - "traefik.http.routers.gitter-app.rule=Host(`athmos.api.localhost`)"
-#      - "traefik.http.routers.gitter-app.entrypoints=web"
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    container_name: api
+    volumes:
+      - ./api:/usr/app
+      - /usr/app/node_modules
+    environment:
+      PORT: 3000
+      ATHMOS_URL: "http://api.athmos.localhost"
+      DATABASE_URL: "postgres://user:password@postgres:5432/athmos-db?schema=public"
+      SECRET: "7fccba5cfa0d03839d8713b0e37bd54663f940de7464b8e49c0fcb3d531aae48"
+      RESSOURCES_MANAGER_URL: "http://infra-worker"
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitter-app.rule=Host(`api.athmos.localhost`)"
+      - "traefik.http.routers.gitter-app.entrypoints=web"
 
   infra-worker:
     build:
@@ -70,6 +77,7 @@ services:
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
       - "4000:4000" # For debugger
+      - "8081:8080" # For http server
     depends_on:
     - mongodb
     - chart-museum
@@ -94,7 +102,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
+      POSTGRES_DB: athmos-db
     networks:
       - backend
     volumes:
