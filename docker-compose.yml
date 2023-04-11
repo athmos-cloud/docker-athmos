@@ -34,8 +34,8 @@ services:
       - frontend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitter-app.rule=Host(`athmos.localhost`)"
-      - "traefik.http.routers.gitter-app.entrypoints=web"
+      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
+      - "traefik.http.routers.app.entrypoints=web"
 
   api:
     build:
@@ -59,8 +59,8 @@ services:
       - "3001:3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitter-app.rule=Host(`api.athmos.localhost`)"
-      - "traefik.http.routers.gitter-app.entrypoints=web"
+      - "traefik.http.routers.api.rule=Host(`api.athmos.localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
 
   infra-worker:
     build:
