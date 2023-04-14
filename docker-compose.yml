@@ -65,19 +65,18 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile_liver
+      dockerfile: Dockerfile_debug
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
       - ./configs/kube:/root/.kube
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
-      - ~/.gcp/credentials/cloud-project-esgi.json:/etc/credentials/gcp.json
     environment:
       - "KUBERNETES_KUBECONFIG_PATH=/root/.kube/config"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
-      - "4000:4000" # For debugger
       - "8081:8080" # For http server
+      - "4000:4000" # For debugger
     depends_on:
     - mongodb
     - rabbitmq
@@ -88,13 +87,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.infra-worker.rule=Host(`worker.athmos.localhost`)"
       - "traefik.http.routers.infra-worker.entrypoints=web"
+      - "traefik.http.services.infra-worker.loadbalancer.server.port=8080"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - backend
     environment:
