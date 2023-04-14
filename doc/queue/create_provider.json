@@ -1,0 +1,17 @@
+{
+  "verb": "create",
+  "payload": {
+    "project_id": "1",
+    "provider_type": "gcp",
+    "resource_type": "provider",
+    "resource_specs": {
+      "auth": {
+        "type": "secret",
+        "secret": {
+          "value": "<gcp-creds>"
+        }
+      },
+      "vpc": "plugin-playground"
+    }
+  }
+}

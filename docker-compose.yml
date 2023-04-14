@@ -7,7 +7,7 @@ services:
       - backend
       - frontend
     command:
-      - "--log.level=INFO"
+      - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -65,7 +65,7 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_liver
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
@@ -84,6 +84,10 @@ services:
     - chart-museum
     networks:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.infra-worker.rule=Host(`worker.athmos.localhost`)"
+      - "traefik.http.routers.infra-worker.entrypoints=web"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -160,7 +164,20 @@ services:
       - ./plugins/infra/crossplane:/charts
     networks:
       - backend
-      
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: swagger
+    ports:
+      - "81:8080"
+    volumes:
+      - ./doc/api:/usr/share/nginx/html/doc
+    environment:
+      API_URL: doc/openapi.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.swagger.rule=Host(`swagger.athmos.localhost`)"
+      - "traefik.http.routers.swagger.entrypoints=web"
 networks:
  frontend:
  backend:
