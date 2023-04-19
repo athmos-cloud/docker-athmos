@@ -65,7 +65,7 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile_debug
+      dockerfile: Dockerfile_liver
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
@@ -83,6 +83,8 @@ services:
     - chart-museum
     networks:
       - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.infra-worker.rule=Host(`worker.athmos.localhost`)"
@@ -145,7 +147,8 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - backend   
+      - backend
+
   init-chart-museum:
     build:
       context: docker-images/helm
