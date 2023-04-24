@@ -22,7 +22,7 @@ help: _banner ## Show help for all targets
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-all: clone cluster plugins-package up ## Clone the repositories and run athmos containers
+all: cluster plugins-package up ## Clone the repositories and run athmos containers
 
 rm: ## Remove athmos containers
 ifndef $(svc)

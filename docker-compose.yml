@@ -50,6 +50,8 @@ services:
       ATHMOS_URL: "http://api.athmos.localhost"
       DATABASE_URL: "postgres://user:password@postgres:5432/athmos-db?schema=public"
       SECRET: "7fccba5cfa0d03839d8713b0e37bd54663f940de7464b8e49c0fcb3d531aae48"
+      RMQ_URL: "amqp://user:password@rabbitmq:5672/"
+      RMQ_WRITE_QUEUE: to-infra-worker
       RESSOURCES_MANAGER_URL: "http://infra-worker:8080"
     networks:
       - backend
@@ -72,7 +74,7 @@ services:
       - ./configs/kube:/root/.kube
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
     environment:
-      - "KUBERNETES_KUBECONFIG_PATH=/root/.kube/config"
+      - "KUBECONFIG=/root/.kube/config"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
       - "8081:8080" # For http server
