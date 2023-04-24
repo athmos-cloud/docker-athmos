@@ -54,7 +54,7 @@ _kind: _clear-kind ## Create a k3d cluster
 	@kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
 	@kind get kubeconfig --name $(KIND_CLUSTER_NAME) > $(KUBE_CONFIG_LOCATION)
 	@export KUBECONFIG=$(KUBE_CONFIG_LOCATION)
-	@sed -i "s/0.0.0.0/host.docker.internal/g" $(KUBE_CONFIG_LOCATION)
+	@cat $(KUBE_CONFIG_LOCATION) | sed "s/0.0.0.0/host.docker.internal/g" > $(KUBE_CONFIG_LOCATION)
 	@#kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 .PHONY: _kind
 
