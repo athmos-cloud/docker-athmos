@@ -1,0 +1,24 @@
+{
+  "verb": "create",
+  "payload": {
+    "projectID": "644e53072c991db43b61d433",
+    "providerType": "gcp",
+    "resourceType": "provider",
+    "identifier": {
+      "providerID": "gcp-provider"
+    },
+    "resourceSpecs": {
+      "name": "gcp-provider-1",
+      "managed": true,
+      "auth": {
+        "type": "secret",
+        "secret": {
+          "name": "gcp-secret",
+          "key": "credentials.json",
+          "namespace": "gcptesttedwk"
+        }
+      },
+      "vpc": "plugin-playground"
+    }
+  }
+}

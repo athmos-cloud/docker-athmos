@@ -75,9 +75,10 @@ services:
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
     environment:
       - "KUBECONFIG=/root/.kube/config"
+      - "REDIRECTION_URI=http://api.athmos.localhost"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
-      - "8081:8080" # For http server
+      - "8081:8081" # For http server
       - "4000:4000" # For debugger
     depends_on:
     - mongodb
