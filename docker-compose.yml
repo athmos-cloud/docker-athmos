@@ -67,7 +67,7 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile_liver
+      dockerfile: Dockerfile_debug
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app

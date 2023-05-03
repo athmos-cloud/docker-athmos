@@ -1,18 +1,16 @@
 {
   "verb": "create",
   "payload": {
-    "projectID": "644e53072c991db43b61d433",
+    "projectID": "6453e53ac9c45308d7dd1700",
     "providerType": "gcp",
     "resourceType": "network",
-    "identifier": {
-      "providerID": "gcp-provider",
-      "vpcID": "plugin-playground",
-      "networkID": "test-net"
-    },
     "resourceSpecs": {
-      "name": "test-net",
+      "identifier": {
+        "providerID": "gcp-provider",
+        "vpcID": "plugin-playground",
+        "networkID": "test-net"
+      },
       "managed": true,
-      "vpc": "plugin-playground",
       "providerName": "gcp-provider"
     }
   }
