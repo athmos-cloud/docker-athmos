@@ -52,11 +52,16 @@ nuke-containers: ## Remove all containers
 _kind: _clear-kind ## Create a k3d cluster
 	@mkdir -p $(KUBE_CONFIG_DIR)
 	@kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
-	@kind get kubeconfig --name $(KIND_CLUSTER_NAME) > $(KUBE_CONFIG_LOCATION)
+	@kind get kubeconfig --name $(KIND_CLUSTER_NAME) > /tmp/kubeconfig
+	@cat /tmp/kubeconfig | sed "s/0.0.0.0/host.docker.internal/g" > $(KUBE_CONFIG_LOCATION)
+	@rm -f /tmp/kubeconfig
 	@export KUBECONFIG=$(KUBE_CONFIG_LOCATION)
-	@cat $(KUBE_CONFIG_LOCATION) | sed "s/0.0.0.0/host.docker.internal/g" > $(KUBE_CONFIG_LOCATION)
 	@#kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 .PHONY: _kind
+
+_kind-test:
+	@cat $(KUBE_CONFIG_LOCATION) | sed "s/0.0.0.0/host.docker.internal/g" > toto
+.PHONY: _kind-test
 
 _clear-kind:
 	@kind delete cluster --name  $(KIND_CLUSTER_NAME)

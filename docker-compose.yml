@@ -20,22 +20,22 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  app:
-    build:
-        context: app
-        dockerfile: Dockerfile
-    container_name: app
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./app:/app
-      - /app/node_modules
-    networks:
-      - frontend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
-      - "traefik.http.routers.app.entrypoints=web"
+#  app:
+#    build:
+#        context: app
+#        dockerfile: Dockerfile
+#    container_name: app
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - ./app:/app
+#      - /app/node_modules
+#    networks:
+#      - frontend
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
+#      - "traefik.http.routers.app.entrypoints=web"
 
   api:
     build:
@@ -74,7 +74,7 @@ services:
       - ./configs/kube:/root/.kube
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
     environment:
-      - "KUBECONFIG=/root/.kube/config"
+      - "KUBECONFIG_PATH=/root/.kube/config"
       - "REDIRECTION_URI=http://api.athmos.localhost"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
@@ -84,7 +84,7 @@ services:
     - mongodb
     - rabbitmq
     - chart-museum
-    networks:
+    networks: 
       - backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
