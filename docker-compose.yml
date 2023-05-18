@@ -67,7 +67,7 @@ services:
   infra-worker:
     build:
       context: infra-worker
-      dockerfile: Dockerfile_debug
+      dockerfile: Dockerfile_liver
     container_name: infra-worker
     volumes:
       - ./infra-worker:/go/src/app
@@ -75,7 +75,7 @@ services:
       - ./plugins/infra/crossplane/.plugins:/etc/athmos/plugins
     environment:
       - "KUBECONFIG_PATH=/root/.kube/config"
-      - "REDIRECTION_URI=http://api.athmos.localhost"
+      - "REDIRECTION_URL=http://api.athmos.localhost"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
     ports:
       - "8081:8081" # For http server

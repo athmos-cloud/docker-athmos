@@ -1,16 +1,15 @@
 {
   "verb": "create",
   "payload": {
-    "projectID": "6454f12fc2abd9a5e44f28cd",
+    "projectID": "6463c0bdf0ee3af3409c65d1",
     "providerType": "gcp",
     "resourceType": "provider",
-    
+    "name": "gcp-provider",
+    "managed": true,
+    "tags": {
+      "providerType": "gcp"
+    },
     "resourceSpecs": {
-      "identifier": {
-        "providerID": "gcp-provider"
-      },
-      "name": "gcp-provider-1",
-      "managed": true,
       "auth": {
         "type": "secret",
         "secret": {

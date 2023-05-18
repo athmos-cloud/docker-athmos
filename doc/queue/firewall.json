@@ -1,0 +1,35 @@
+{
+    "verb": "create",
+    "payload": {
+      "projectID": "646264a3a708e7e59bb98412",
+      "providerType": "gcp",
+      "resourceType": "firewall",
+      "monitored": true,
+      "name": "test-firewall",
+      "parentIdentifier": {
+        "providerID": "gcp-provider-droejwjloy",
+        "networkID": "test-net-2"
+      },
+      "managed": true,
+      "resourceSpecs": {
+        "allow": [
+            {
+              "protocol": "tcp",
+              "ports": [
+                "22",
+                "80",
+                "443"
+              ]
+            }
+          ],
+          "deny": [
+            {
+              "protocol": "tcp",
+              "ports": [
+                "2222"
+              ]
+            }
+          ]
+      }
+    }
+}

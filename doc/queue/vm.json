@@ -1,0 +1,43 @@
+{
+    "verb": "create",
+    "payload": {
+      "projectID": "6463c0bdf0ee3af3409c65d1",
+      "providerType": "gcp",
+      "resourceType": "vm",
+      "monitored": true,
+      "name": "test-subnet",
+      "parentIdentifier": {
+        "providerID": "gcp-provider-vrzlunrnqd",
+        "networkID": "test-net",
+        "subnetID": "test-subnet"
+      },
+      "managed": true,
+      "resourceSpecs": {
+        "zone": "europe-west6-a",
+        "publicIP": true,
+        "machineType": "n1-standard-1",
+        "disks": [
+            {
+            "type": "pd-standard",
+            "mode": "READ_WRITE",
+            "sizeGib": 10,
+            "autoDelete": true
+            }
+        ],
+        "auth": [
+            {
+            "username": "athmos-admin",
+            "sshPublicKey": "files/ssh/id_rsa.pub"
+            },
+            {
+            "username": "athmos-user",
+            "sshPublicKey": "files/ssh/id_rsa.pub"
+            }
+        ],
+        "os": {
+            "osType": "debian",
+            "version": "11-bullseye-v20230206"
+        }
+        }
+    }
+}

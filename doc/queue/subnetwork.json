@@ -1,0 +1,19 @@
+{
+    "verb": "create",
+    "payload": {
+      "projectID": "6463c0bdf0ee3af3409c65d1",
+      "providerType": "gcp",
+      "resourceType": "subnet",
+      "monitored": true,
+      "name": "test-subnet",
+      "parentIdentifier": {
+        "providerID": "gcp-provider-vrzlunrnqd",
+        "networkID": "test-net"
+      },
+      "managed": true,
+      "resourceSpecs": {
+        "ipCidrRange": "10.0.0.0/8",
+        "region": "europe-west9"
+      }
+    }
+  }
