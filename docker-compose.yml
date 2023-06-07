@@ -49,12 +49,12 @@ services:
       PORT: 3000
       ATHMOS_URL: "http://api.athmos.localhost"
       DATABASE_URL: "neo4j://neo4j:7687"
-      DATABASE_USER: athmos
+      DATABASE_USER: neo4j
       DATABASE_PASSWORD: password
       SECRET: "7fccba5cfa0d03839d8713b0e37bd54663f940de7464b8e49c0fcb3d531aae48"
       RMQ_URL: "amqp://user:password@rabbitmq:5672/"
       RMQ_WRITE_QUEUE: to-infra-worker
-      RESSOURCES_MANAGER_URL: "http://infra-worker:8080"
+      RESSOURCES_MANAGER_URL: "http://infra-worker:8081"
     networks:
       - backend
     depends_on:
@@ -111,10 +111,12 @@ services:
     container_name: neo4j
     image: neo4j:5.7.0-community
     environment:
-      NEO4J_AUTH: athmos/password
+      NEO4J_AUTH: neo4j/password
     ports:
       - '7474:7474'
       - '7687:7687'
+    networks:
+      - backend
     restart: unless-stopped
     volumes:
       - ./data/neo4j:/data
