@@ -135,42 +135,6 @@ services:
       - ./data/mongo:/data/db
       - ./configs/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
 
-  #https://chartmuseum.com/docs/
-  chart-museum:
-    image: bitnami/chartmuseum:0.15.0-debian-11-r79
-    container_name: chart-museum
-    entrypoint: chartmuseum
-    user: "0"
-    command:
-        - --port=8080
-        - --storage=local
-        - --storage-local-rootdir=/charts
-        - --basic-auth-user=athmos
-        - --basic-auth-pass=athmos
-    ports:
-      - "8080:8080"
-    networks:
-      - backend
-
-  init-chart-museum:
-    build:
-      context: docker-images/helm
-      dockerfile: Dockerfile
-    container_name: init-chart-museum
-    user: "0"
-    entrypoint: "/charts/package.sh true"
-    working_dir: /charts
-    environment:
-      REPOSITORY_USERNAME: "athmos"
-      REPOSITORY_PASSWORD: "athmos"
-      REPOSITORY_ADDRESS: "chart-museum:8080"
-    depends_on:
-      - chart-museum
-    volumes:
-      - ./plugins/infra/crossplane:/charts
-    networks:
-      - backend
-
   swagger:
     image: swaggerapi/swagger-ui
     container_name: swagger
