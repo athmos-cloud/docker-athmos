@@ -85,7 +85,6 @@ services:
     depends_on:
     - mongodb
     - rabbitmq
-    - chart-museum
     networks: 
       - backend
     extra_hosts:
