@@ -1,0 +1,153 @@
+version: '2.4'
+services:
+  traefik:
+    image: "traefik:v2.7"
+    container_name: "traefik"
+    networks:
+      - backend
+      - frontend
+    command:
+      - "--log.level=INFO"
+      - "--api.dashboard=false"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "traefik.http.middlewares.testHeader.headers.customrequestheaders.Access-Control-Allow-Origin: http://athmos.localhost"
+      - "traefik.http.middlewares.testHeader.headers.customrequestheaders.Access-Control-Allow-Credentials: true"
+    ports:
+      - "80:80"
+      - "8082:8080"
+    volumes:
+      - "//var/run/docker.sock:/var/run/docker.sock:ro"
+
+  app:
+   build:
+       context: app
+       dockerfile: Dockerfile
+   container_name: app
+   ports:
+     - "3000:3000"
+   volumes:
+     - ./app:/app
+     - /app/node_modules
+   networks:
+     - frontend
+   labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
+      - "traefik.http.routers.app.entrypoints=web"
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    container_name: api
+    volumes:
+      - ./api:/usr/app
+      - /usr/app/node_modules
+    environment:
+      PORT: 3000
+      ATHMOS_URL: "http://api.athmos.localhost"
+      DATABASE_URL: "neo4j://neo4j:7687"
+      DATABASE_USER: neo4j
+      DATABASE_PASSWORD: password
+      SECRET: "7fccba5cfa0d03839d8713b0e37bd54663f940de7464b8e49c0fcb3d531aae48"
+      RMQ_URL: "amqp://user:password@rabbitmq:5672/"
+      RMQ_WRITE_QUEUE: to-infra-worker
+      RESSOURCES_MANAGER_URL: "http://infra-worker:8081"
+    networks:
+      - backend
+    depends_on:
+      - neo4j
+    ports:
+      - "3001:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.athmos.localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
+
+  infra-worker:
+    build:
+      context: infra-worker
+      dockerfile: Dockerfile_liver
+    container_name: infra-worker
+    volumes:
+      - ./infra-worker:/go/src/app
+      - ./configs/kube:/root/.kube
+    environment:
+      - "KUBECONFIG_PATH=/root/.kube/config"
+      - "REDIRECTION_URL=http://api.athmos.localhost"
+      - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
+      - "STATIC_FILES_DIR=/go/src/app/static"
+    ports:
+      - "8081:8081" # For http server
+      - "4000:4000" # For debugger
+    depends_on:
+    - mongodb
+    - rabbitmq
+    networks: 
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.infra-worker.rule=Host(`worker.athmos.localhost`)"
+      - "traefik.http.routers.infra-worker.entrypoints=web"
+      - "traefik.http.services.infra-worker.loadbalancer.server.port=8080"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+
+  neo4j:
+    container_name: neo4j
+    image: neo4j:5.7.0-community
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    networks:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./data/neo4j:/data
+
+  mongodb:
+    image: mongo:6.0.5
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: plugin-db
+    networks:
+      - backend
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./configs/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: swagger
+    ports:
+      - "81:8080"
+    volumes:
+      - ./doc/api:/usr/share/nginx/html/doc
+    environment:
+      API_URL: doc/openapi.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.swagger.rule=Host(`swagger.athmos.localhost`)"
+      - "traefik.http.routers.swagger.entrypoints=web"
+networks:
+ frontend:
+ backend:

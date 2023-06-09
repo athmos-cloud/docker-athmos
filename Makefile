@@ -30,9 +30,22 @@ else
 endif
 .PHONY: rm
 
+rmw: ## Remove athmos containers in Windows
+ifndef $(svc)
+	@docker-compose -f docker-compose.win.yml rm
+else
+	@docker rm -f $(svc)
+	@docker rmi -f docker-athmos_$(svc)
+endif
+.PHONY: rmw
+
 up:  ## Run athmos containers
 	@docker compose up -V -d --build
 .PHONY: up
+
+upw:  ## Run athmos containers in Windows
+	@docker compose -f docker-compose.win.yml up -V -d --build
+.PHONY: upw
 
 ps: _banner ## List athmos containers
 	@docker compose ps
