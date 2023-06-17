@@ -5,6 +5,8 @@ API_REPO=git@github.com:athmos-cloud/api-athmos.git
 API_DIR=api
 INFRA_WORKER_REPO=git@github.com:athmos-cloud/infra-worker-athmos.git
 INFRA_WORKER_DIR=infra-worker
+INFRA_WATCHER_REPO=git@github.com:athmos-cloud/infra-watcher-athmos.git
+INFRA_WATCHER_DIR=infra-watcher
 DOCKER_IMAGES_REPO=git@github.com:athmos-cloud/docker-images.git
 DOCKER_IMAGES_DIR=docker-images
 
