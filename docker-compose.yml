@@ -95,6 +95,27 @@ services:
       - "traefik.http.routers.infra-worker.entrypoints=web"
       - "traefik.http.services.infra-worker.loadbalancer.server.port=8080"
 
+  infra-watcher:
+    build:
+      context: infra-watcher
+      dockerfile: Dockerfile_liver
+    container_name: infra-watcher
+    volumes:
+      - ./infra-watcher:/go/src/app
+      - ./configs/kube:/root/.kube
+    environment:
+      - "KUBECONFIG_PATH=/root/.kube/config"
+      - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
+    ports:
+      - "4000:4000" # For debugger
+    depends_on:
+    - mongodb
+    - rabbitmq
+    networks: 
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
