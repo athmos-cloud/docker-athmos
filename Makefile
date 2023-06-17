@@ -9,17 +9,17 @@ DOCKER_IMAGES_REPO=git@github.com:athmos-cloud/docker-images.git
 DOCKER_IMAGES_DIR=docker-images
 
 KIND_CONFIG=configs/kind/kind.yaml
-KIND_CLUSTER_NAME=plugins
+KIND_CLUSTER_NAME=athmos-operations
 KUBE_CONFIG_DIR=configs/kube
 KUBE_CONFIG_LOCATION=$(KUBE_CONFIG_DIR)/config
-CROSSPLANE_CONFIG_DIR=configs/crossplane
+
 .DEFAULT_GOAL := help
 
 help: _banner ## Show help for all targets
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-all: cluster plugins-package up ## Clone the repositories and run athmos containers
+all: cluster up ## Clone the repositories and run athmos containers
 
 rm: ## Remove athmos containers
 ifndef $(svc)
@@ -96,10 +96,6 @@ _crossplane: ## Install crossplane
 .PHONY: _crossplane
 
 cluster: _kind _crossplane ## Create a k3d cluster with crossplane installations
-
-plugins-package: ## Create the plugin folder
-	@cd $(PLUGIN_INFRA_HELM_DIR) && ./plugin.sh
-.PHONY: plugins-package
 
 _banner:
 	@cat .assets/banner

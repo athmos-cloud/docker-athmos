@@ -21,22 +21,22 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  app:
-   build:
-       context: app
-       dockerfile: Dockerfile
-   container_name: app
-   ports:
-     - "3000:3000"
-   volumes:
-     - ./app:/app
-     - /app/node_modules
-   networks:
-     - frontend
-   labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
-      - "traefik.http.routers.app.entrypoints=web"
+  # app:
+  #  build:
+  #      context: app
+  #      dockerfile: Dockerfile
+  #  container_name: app
+  #  ports:
+  #    - "3000:3000"
+  #  volumes:
+  #    - ./app:/app
+  #    - /app/node_modules
+  #  networks:
+  #    - frontend
+  #  labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
+  #     - "traefik.http.routers.app.entrypoints=web"
   api:
     build:
       context: api
@@ -80,7 +80,7 @@ services:
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
       - "STATIC_FILES_DIR=/go/src/app/static"
     ports:
-      - "8081:8081" # For http server
+      - "802:8081" # For http server
       - "4000:4000" # For debugger
     depends_on:
     - mongodb
