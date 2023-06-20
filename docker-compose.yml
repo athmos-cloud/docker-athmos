@@ -102,12 +102,15 @@ services:
     container_name: infra-watcher
     volumes:
       - ./infra-watcher:/go/src/app
+      - ./infra-watcher/.configs/.netrc:/root/.netrc
       - ./configs/kube:/root/.kube
     environment:
       - "KUBECONFIG_PATH=/root/.kube/config"
       - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
+      - "GOPRIVATE=github.com/athmos-cloud"
+      - "GO111MODULE=on"
     ports:
-      - "4000:4000" # For debugger
+      - "4001:4000" # For debugger
     depends_on:
     - mongodb
     - rabbitmq

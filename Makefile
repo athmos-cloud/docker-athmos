@@ -41,7 +41,7 @@ else
 endif
 .PHONY: rmw
 
-up:  ## Run athmos containers
+up: _configs  ## Run athmos containers
 	@docker compose up -V -d --build
 .PHONY: up
 
@@ -71,9 +71,6 @@ _kind: _clear-kind ## Create a k3d cluster
 	@#kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 .PHONY: _kind
 
-_kind-test:
-	@cat $(KUBE_CONFIG_LOCATION) | sed "s/0.0.0.0/host.docker.internal/g" > toto
-.PHONY: _kind-test
 
 _clear-kind:
 	@kind delete cluster --name  $(KIND_CLUSTER_NAME)
@@ -106,6 +103,10 @@ _banner:
 _clone:
 	@git clone $(repo) $(dir)
 .PHONY: _clone
+
+_configs:
+	$(MAKE) -C $(INFRA_WATCHER_DIR) netrc
+.PHONY: _configs
 
 clone: ## Clone the repositories
 	$(MAKE) _clone dir=$(APP_DIR) repo=$(APP_REPO)
