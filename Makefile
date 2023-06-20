@@ -14,7 +14,7 @@ KIND_CONFIG=configs/kind/kind.yaml
 KIND_CLUSTER_NAME=athmos-operations
 KUBE_CONFIG_DIR=configs/kube
 KUBE_CONFIG_LOCATION=$(KUBE_CONFIG_DIR)/config
-
+CROSSPLANE_CONFIG_DIR=configs/crossplane
 .DEFAULT_GOAL := help
 
 help: _banner ## Show help for all targets
