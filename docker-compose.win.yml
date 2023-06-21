@@ -21,22 +21,6 @@ services:
     volumes:
       - "//var/run/docker.sock:/var/run/docker.sock:ro"
 
-  app:
-   build:
-       context: app
-       dockerfile: Dockerfile
-   container_name: app
-   ports:
-     - "3000:3000"
-   volumes:
-     - ./app:/app
-     - /app/node_modules
-   networks:
-     - frontend
-   labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`athmos.localhost`)"
-      - "traefik.http.routers.app.entrypoints=web"
   api:
     build:
       context: api
@@ -83,9 +67,9 @@ services:
       - "8081:8081" # For http server
       - "4000:4000" # For debugger
     depends_on:
-    - mongodb
-    - rabbitmq
-    networks: 
+      - mongodb
+      - rabbitmq
+    networks:
       - backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -94,6 +78,30 @@ services:
       - "traefik.http.routers.infra-worker.rule=Host(`worker.athmos.localhost`)"
       - "traefik.http.routers.infra-worker.entrypoints=web"
       - "traefik.http.services.infra-worker.loadbalancer.server.port=8080"
+
+  infra-watcher:
+    build:
+      context: infra-watcher
+      dockerfile: Dockerfile_liver
+    container_name: infra-watcher
+    volumes:
+      - ./infra-watcher:/go/src/app
+      - ./infra-watcher/.configs/.netrc:/root/.netrc
+      - ./configs/kube:/root/.kube
+    environment:
+      - "KUBECONFIG_PATH=/root/.kube/config"
+      - "CONFIG_FILE_LOCATION=/go/src/app/config.yaml"
+      - "GOPRIVATE=github.com/athmos-cloud"
+      - "GO111MODULE=on"
+    ports:
+      - "4001:4000" # For debugger
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -117,9 +125,9 @@ services:
       - '7687:7687'
     networks:
       - backend
-    restart: unless-stopped
-    volumes:
-      - ./data/neo4j:/data
+    restart: on-failure
+  #    volumes:
+  #      - ./data/neo4j:/data
 
   mongodb:
     image: mongo:6.0.5
@@ -149,5 +157,5 @@ services:
       - "traefik.http.routers.swagger.rule=Host(`swagger.athmos.localhost`)"
       - "traefik.http.routers.swagger.entrypoints=web"
 networks:
- frontend:
- backend:
+  frontend:
+  backend:
