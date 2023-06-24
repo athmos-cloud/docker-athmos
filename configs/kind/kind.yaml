@@ -5,8 +5,8 @@ networking:
   apiServerPort: 6444
 nodes:
   - role: control-plane
-  - role: worker
-  - role: worker
+  # - role: worker
+  # - role: worker
 kubeadmConfigPatchesJSON6902:
   - group: kubeadm.k8s.io
     version: v1beta3

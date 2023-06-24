@@ -61,7 +61,7 @@ nuke-containers: ## Remove all containers
 	@docker rm -f $(docker ps -aq)
 .PHONY: nuke-containers
 
-_kind: _clear-kind ## Create a k3d cluster
+_kind: _clear-kind ## Create a kind cluster
 	@mkdir -p $(KUBE_CONFIG_DIR)
 	@kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
 	@kind get kubeconfig --name $(KIND_CLUSTER_NAME) > /tmp/kubeconfig
@@ -94,7 +94,7 @@ _crossplane: ## Install crossplane
 	$(MAKE) _crossplane-configs
 .PHONY: _crossplane
 
-cluster: _kind _crossplane ## Create a k3d cluster with crossplane installations
+cluster: _kind _crossplane ## Create a kind cluster with crossplane installations
 
 _banner:
 	@cat .assets/banner
