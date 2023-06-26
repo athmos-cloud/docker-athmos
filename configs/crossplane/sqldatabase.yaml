@@ -1,0 +1,207 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xsqldatabases.aws.athmos.com
+spec:
+  group: aws.athmos.com
+  names:
+    kind: XSQLDatabase
+    plural: xsqldatabases
+  claimNames:
+    kind: SQLDatabase
+    plural: sqldatabases
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    machineType:
+                      type: string
+                    networkRef:
+                      type: string
+                    passwordNamespace:
+                      type: string
+                    passwordRef:
+                      type: string
+                    providerRef:
+                      type: string
+                    region:
+                      type: string
+                    resourceName:
+                      type: string
+                    sqlType:
+                      type: string
+                    sqlVersion:
+                      type: string
+                    storageGB:
+                      type: integer
+                    storageGBLimit:
+                      type: integer
+                    subnet1:
+                      type: string
+                    subnet2:
+                      type: string
+                    subnetGroupName:
+                      type: string
+                  required:
+                    - machineType
+                    - networkRef
+                    - passwordNamespace
+                    - passwordRef
+                    - providerRef
+                    - region
+                    - resourceName
+                    - sqlType
+                    - sqlVersion
+                    - storageGB
+                    - subnet1
+                    - subnet2
+              required:
+                - parameters
+
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: aws-sqldb
+  labels:
+    crossplane.io/xrd: sqldatabases.aws.athmos.com
+    provider: provider-aws
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: aws.athmos.com/v1alpha1
+    kind: XSQLDatabase
+  patchSets:
+    - name: common-parameters
+      patches:
+        - fromFieldPath: "spec.parameters.providerRef"
+          toFieldPath: "spec.providerConfigRef.name"
+    - name: subnet-common-parameters
+      patches:
+        - fromFieldPath: "spec.parameters.networkRef"
+          toFieldPath: "spec.forProvider.vpcIdRef.name"
+  resources:
+    - name: sql-instance
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        spec:
+          forProvider:
+            autoGeneratePassword: false
+            passwordSecretRef:
+              key: password
+            storageEncrypted: true
+            storageType: gp2
+            username: root
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - fromFieldPath: spec.parameters.resourceName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-sql-instance"
+        - fromFieldPath: spec.parameters.storageGB
+          toFieldPath: spec.forProvider.allocatedStorage
+        - fromFieldPath: spec.parameters.subnetGroupName
+          toFieldPath: spec.forProvider.dbSubnetGroupNameRef.name
+        - fromFieldPath: spec.parameters.sqlType
+          toFieldPath: spec.forProvider.engine
+        - fromFieldPath: spec.parameters.sqlVersion
+          toFieldPath: spec.forProvider.engineVersion
+        - fromFieldPath: spec.parameters.machineType
+          toFieldPath: spec.forProvider.instanceClass
+        - fromFieldPath: spec.parameters.storageGBLimit
+          toFieldPath: spec.forProvider.maxAllocatedStorage
+        - fromFieldPath: spec.parameters.passwordRef
+          toFieldPath: spec.forProvider.passwordSecretRef.name
+        - fromFieldPath: spec.parameters.passwordNamespace
+          toFieldPath: spec.forProvider.passwordSecretRef.namespace
+        - fromFieldPath: spec.parameters.resourceName
+          toFieldPath: spec.forProvider.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-sql-instance"
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.region
+    - name: subnet-group
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: SubnetGroup
+        spec:
+          forProvider:
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - fromFieldPath: spec.parameters.resourceName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-subnet-group"
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.region
+        - fromFieldPath: spec.parameters.subnet1
+          toFieldPath: spec.forProvider.subnetIdRefs[0].name
+        - fromFieldPath: spec.parameters.subnet2
+          toFieldPath: spec.forProvider.subnetIdRefs[1].name
+    - name: subnet1
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: Subnet
+        spec:
+          forProvider:
+            cidrBlock: "10.0.0.0/26"
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: PatchSet
+          patchSetName: subnet-common-parameters
+        - fromFieldPath: spec.parameters.resourceName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-subnet1"
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.region
+          transforms:
+            - type: string
+              string:
+                fmt: "%sa"
+    - name: subnet2
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: Subnet
+        spec:
+          forProvider:
+            cidrBlock: "10.0.1.0/26"
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: PatchSet
+          patchSetName: subnet-common-parameters
+        - fromFieldPath: spec.parameters.resourceName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-subnet2"
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.region
+          transforms:
+            - type: string
+              string:
+                fmt: "%sb"
