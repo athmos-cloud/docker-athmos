@@ -54,6 +54,7 @@ services:
       SECRET: "7fccba5cfa0d03839d8713b0e37bd54663f940de7464b8e49c0fcb3d531aae48"
       RMQ_URL: "amqp://user:password@rabbitmq:5672/"
       RMQ_WRITE_QUEUE: to-infra-worker
+      RMQ_READ_QUEUE: to-gateway-api
       RESSOURCES_MANAGER_URL: "http://infra-worker:8081"
     networks:
       - backend
