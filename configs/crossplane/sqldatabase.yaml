@@ -3,6 +3,7 @@ kind: CompositeResourceDefinition
 metadata:
   name: xsqldatabases.aws.athmos.com
 spec:
+  defaultCompositeDeletePolicy: Foreground
   group: aws.athmos.com
   names:
     kind: XSQLDatabase
@@ -48,7 +49,11 @@ spec:
                       type: integer
                     subnet1:
                       type: string
+                    subnet1CidrBlock:
+                      type: string
                     subnet2:
+                      type: string
+                    subnet2CidrBlock:
                       type: string
                     subnetGroupName:
                       type: string
@@ -64,7 +69,9 @@ spec:
                     - sqlVersion
                     - storageGB
                     - subnet1
+                    - subnet1CidrBlock
                     - subnet2
+                    - subnet2CidrBlock
               required:
                 - parameters
 
@@ -136,6 +143,10 @@ spec:
                 fmt: "%s-sql-instance"
         - fromFieldPath: spec.parameters.region
           toFieldPath: spec.forProvider.region
+        - type: ToCompositeFieldPath
+          fromFieldPath: status
+          toFieldPath: status.databaseStatus
+
     - name: subnet-group
       base:
         apiVersion: rds.aws.upbound.io/v1beta1
@@ -161,14 +172,13 @@ spec:
       base:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: Subnet
-        spec:
-          forProvider:
-            cidrBlock: "10.0.0.0/26"
       patches:
         - type: PatchSet
           patchSetName: common-parameters
         - type: PatchSet
           patchSetName: subnet-common-parameters
+        - fromFieldPath: spec.parameters.subnet1CidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
         - fromFieldPath: spec.parameters.resourceName
           toFieldPath: metadata.name
           transforms:
@@ -185,14 +195,13 @@ spec:
       base:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: Subnet
-        spec:
-          forProvider:
-            cidrBlock: "10.0.1.0/26"
       patches:
         - type: PatchSet
           patchSetName: common-parameters
         - type: PatchSet
           patchSetName: subnet-common-parameters
+        - fromFieldPath: spec.parameters.subnet2CidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
         - fromFieldPath: spec.parameters.resourceName
           toFieldPath: metadata.name
           transforms:
