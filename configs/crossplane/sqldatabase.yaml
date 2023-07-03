@@ -72,6 +72,7 @@ spec:
                     - subnet1CidrBlock
                     - subnet2
                     - subnet2CidrBlock
+                    - subnetGroupName
               required:
                 - parameters
 
@@ -93,10 +94,13 @@ spec:
       patches:
         - fromFieldPath: "spec.parameters.providerRef"
           toFieldPath: "spec.providerConfigRef.name"
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
     - name: subnet-common-parameters
       patches:
         - fromFieldPath: "spec.parameters.networkRef"
           toFieldPath: "spec.forProvider.vpcIdRef.name"
+
   resources:
     - name: sql-instance
       base:
@@ -105,8 +109,9 @@ spec:
         spec:
           forProvider:
             autoGeneratePassword: false
+            dbName: sqldb123
             passwordSecretRef:
-              key: password
+              key: Password
             storageEncrypted: true
             storageType: gp2
             username: root
@@ -135,12 +140,6 @@ spec:
           toFieldPath: spec.forProvider.passwordSecretRef.name
         - fromFieldPath: spec.parameters.passwordNamespace
           toFieldPath: spec.forProvider.passwordSecretRef.namespace
-        - fromFieldPath: spec.parameters.resourceName
-          toFieldPath: spec.forProvider.name
-          transforms:
-            - type: string
-              string:
-                fmt: "%s-sql-instance"
         - fromFieldPath: spec.parameters.region
           toFieldPath: spec.forProvider.region
         - type: ToCompositeFieldPath
@@ -168,6 +167,7 @@ spec:
           toFieldPath: spec.forProvider.subnetIdRefs[0].name
         - fromFieldPath: spec.parameters.subnet2
           toFieldPath: spec.forProvider.subnetIdRefs[1].name
+
     - name: subnet1
       base:
         apiVersion: ec2.aws.upbound.io/v1beta1
@@ -186,11 +186,12 @@ spec:
               string:
                 fmt: "%s-subnet1"
         - fromFieldPath: spec.parameters.region
-          toFieldPath: spec.forProvider.region
+          toFieldPath: spec.forProvider.availabilityZone
           transforms:
             - type: string
               string:
                 fmt: "%sa"
+
     - name: subnet2
       base:
         apiVersion: ec2.aws.upbound.io/v1beta1
@@ -209,7 +210,7 @@ spec:
               string:
                 fmt: "%s-subnet2"
         - fromFieldPath: spec.parameters.region
-          toFieldPath: spec.forProvider.region
+          toFieldPath: spec.forProvider.availabilityZone
           transforms:
             - type: string
               string:
