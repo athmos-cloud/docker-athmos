@@ -41,7 +41,7 @@ else
 endif
 .PHONY: rmw
 
-up: _configs  ## Run athmos containers
+up: #_configs  ## Run athmos containers
 	@docker compose up -V -d --build
 .PHONY: up
 
