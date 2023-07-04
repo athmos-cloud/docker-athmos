@@ -1,0 +1,264 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xvminstances.aws.athmos.com
+spec:
+  defaultCompositeDeletePolicy: Background
+  group: aws.athmos.com
+  names:
+    kind: XVMInstance
+    plural: xvminstances
+  claimNames:
+    kind: VMInstance
+    plural: vminstances
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    assignPublicIp:
+                      type: boolean
+                    deletionPolicy:
+                      type: string
+                    disks:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          deleteOnTermination:
+                            type: boolean
+                          encrypted:
+                            type: boolean
+                          iops:
+                            type: number
+                          kmsKeyId:
+                            type: string
+                          kmsKeyIdRef:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                          volumeSize:
+                            type: number
+                          volumeType:
+                            type: string
+                    keyPairRef:
+                      type: string
+                    machineType:
+                      type: string
+                    networkRef:
+                      type: string
+                    os:
+                      type: string
+                    providerRef:
+                      type: string
+                    publicKey:
+                      type: string
+                    region:
+                      type: string
+                    securityGroupRef:
+                      type: string
+                    subnetworkRef:
+                      type: string
+                    vmId:
+                      type: string
+                  required:
+                    - assignPublicIp
+                    - deletionPolicy
+                    - disks
+                    - keyPairRef
+                    - machineType
+                    - networkRef
+                    - os
+                    - providerRef
+                    - publicKey
+                    - region
+                    - securityGroupRef
+                    - subnetworkRef
+                    - vmId
+              required:
+                - parameters
+
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: aws-vm
+  labels:
+    crossplane.io/xrd: vminstances.aws.athmos.com
+    provider: provider-aws
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: aws.athmos.com/v1alpha1
+    kind: XVMInstance
+
+  patchSets:
+    - name: common-parameters
+      patches:
+        - fromFieldPath: "spec.parameters.deletionPolicy"
+          toFieldPath: "spec.deletionPolicy"
+
+        - fromFieldPath: "spec.parameters.providerRef"
+          toFieldPath: "spec.providerConfigRef.name"
+
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+
+    - name: security-rule-parameters
+      patches:
+        - fromFieldPath: "spec.parameters.securityGroupRef"
+          toFieldPath: "spec.forProvider.securityGroupIdRef.name"
+
+  resources:
+    - name: vm-instance
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: Instance
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - fromFieldPath: spec.parameters.vmId
+          toFieldPath: metadata.name
+
+        - fromFieldPath: spec.parameters.os
+          toFieldPath: spec.forProvider.ami
+
+        - fromFieldPath: spec.parameters.assingPublicIp
+          toFieldPath: spec.forProvider.associatePublicIpAddress
+
+        - fromFieldPath: spec.parameters.machineType
+          toFieldPath: spec.forProvider.instanceType
+
+        - fromFieldPath: spec.parameters.keyName
+          toFieldPath: spec.forProvider.keyName
+          
+        - fromFieldPath: spec.parameters.disks
+          toFieldPath: spec.forProvider.rootBlockDevice
+
+        - fromFieldPath: spec.parameters.subnetworkRef
+          toFieldPath: spec.forProvider.subnetIdRef.name
+
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.publicIp
+          toFieldPath: status.publicIp
+
+    - name: vm-keypair
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: KeyPair
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - fromFieldPath: spec.parameters.keyPairRef
+          toFieldPath: metadata.name
+
+        - fromFieldPath: spec.parameters.publicKey
+          toFieldPath: spec.forProvider.publicKey
+
+    - name: vm-security-group
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroup
+        spec:
+          forProvider:
+            revokeRulesOnDelete: true
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - fromFieldPath: spec.parameters.securityGroupRef
+          toFieldPath: metadata.name
+
+        - fromFieldPath: spec.parameters.securityGroupRef
+          toFieldPath: spec.forProvider.name
+
+        - fromFieldPath: spec.parameters.networkRef
+          toFieldPath: spec.forProvider.vpcIdRef.name
+
+    - name: vm-ingress-ssh
+      base: 
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            cidrBlocks:
+              - 0.0.0.0/0
+            fromPort: 22
+            protocol: tcp
+            toPort: 22
+            type: ingress
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - type: PatchSet
+          patchSetName: security-rule-parameters
+
+    - name: vm-ingress-tcp-80
+      base: 
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            cidrBlocks:
+              - 0.0.0.0/0
+            fromPort: 80
+            protocol: tcp
+            toPort: 80
+            type: ingress
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - type: PatchSet
+          patchSetName: security-rule-parameters
+
+    - name: vm-ingress-tcp-443
+      base: 
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            cidrBlocks:
+              - 0.0.0.0/0
+            fromPort: 443
+            protocol: tcp
+            toPort: 443
+            type: ingress
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - type: PatchSet
+          patchSetName: security-rule-parameters
+
+    - name: vm-egress
+      base: 
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            cidrBlocks:
+              - 0.0.0.0/0
+            fromPort: -1
+            protocol: "-1"
+            toPort: -1
+            type: egress
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+
+        - type: PatchSet
+          patchSetName: security-rule-parameters

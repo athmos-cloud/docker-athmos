@@ -1,9 +1,0 @@
-apiVersion: pkg.crossplane.io/v1alpha1
-kind: ControllerConfig
-metadata:
-  name: crossplane-config
-spec:
-  args:
-    - --max-reconcile-rate=90
-  podSecurityContext:
-    fsGroup: 2000
